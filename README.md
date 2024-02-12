@@ -1,2 +1,2 @@
 # Bash_Script
-Bash script project 
+This project 
