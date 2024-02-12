@@ -1,0 +1,154 @@
+#!/bin/bash
+
+function add_user {
+username=$(whiptail --title "Add User" --inputbox "Enter the username you want to add:" 8 39 --noca>
+if [ $? -eq 0 ]; then
+useradd $username
+whiptail --title "User Add" --msgbox "User ${username} created successfully" 8 39
+else
+whiptail --title "User Add" --msgbox  "User creation cancelled" 8 39
+fi
+}
+
+function user_details {
+username=$(whiptail --title "Show User Details" --inputbox "Enter the username you want:" 8 39 --no>
+if [ $? -eq 0 ]; then
+chage -l $username > /tmp/userinfo.txt
+whiptail --title "User Aging Information" --textbox /tmp/userinfo.txt 20 65
+rm /tmp/userinfo.txt
+else
+whiptail --title "User Add" --msgbox  "Cancelled" 8 39
+fi
+}
+
+
+function list_users {
+if [ $? -eq 0 ]; then
+cut -d : -f1 /etc/passwd > /tmp/userlist.txt
+whiptail --title "Users in the system" --textbox --scrolltext /tmp/userlist.txt 40 65
+rm /tmp/userlist.txt
+else
+whiptail --title "Cancel" --msgbox  "Cancelled" 8 39
+fi
+}
+
+function user_password {
+username=$(whiptail --title "User Password" --inputbox "Enter the username you want:" 8 39 --nocanc>
+password=$(whiptail --title "User Password" --inputbox "Enter the new password:" 8 39 --nocancel  3>
+if [ $? -eq 0 ];then
+echo $password | passwd --stdin $username
+whiptail --title "User Password" --msgbox "New password is $password for user $username" 8 39
+else
+whiptail --title "User Password" --msgbox  "Cancelled" 8 39
+fi
+}
+
+function add_group {
+group=$(whiptail --title "Add Group" --inputbox "Enter the group you want to add:" 8 39 --nocancel >
+if [ $? -eq 0 ]; then
+groupadd $group
+whiptail --title "Group Add" --msgbox  "Group $group is added" 8 39
+else
+whiptail --title "Group Add" --msgbox  "Cancelled" 8 39
+fi
+}
+
+
+function list_groups {
+if [ $? -eq 0 ]; then
+cut -d : -f1 /etc/group > /tmp/groups.txt
+whiptail --title "Groups" --textbox --scrolltext /tmp/groups.txt 40 65
+rm /tmp/groups.txt
+else
+whiptail --title "Groups" --msgbox  "Cancelled" 8 39
+fi
+}
+
+function enable_user { 
+username=$(whiptail --title "Enable User" --inputbox "Enter the username you want:" 8 39 --nocancel>
+if [ $? -eq 0 ]; then
+chage -E -1 $username
+whiptail --title "Enable" --msgbox  "$username account is enabled" 8 39
+else
+whiptail --title "Enable" --msgbox  "Cancelled" 8 39
+fi
+}
+
+function disable_user { 
+username=$(whiptail --title "Disable User" --inputbox "Enter the username you want:" 8 39 --nocance>
+if [ $? -eq 0 ]; then
+chage -E 0 $username
+whiptail --title "Disabled" --msgbox  "$username account is disabled" 8 39
+else
+whiptail --title "Disable" --msgbox  "Cancelled" 8 39
+fi
+}
+
+function delete_user {
+username=$(whiptail --title "Delete User" --inputbox "Enter the username you want to delete:" 8 39 >
+if [ $? -eq 0 ]; then
+userdel -r $username
+whiptail --title "Delete" --msgbox  "User $username deleted successfully" 8 39
+else
+whiptail --title "Delete" --msgbox  "Cancelled" 8 39
+fi
+}
+
+function delete_group {
+group=$(whiptail --title "Delete Group" --inputbox "Enter the group you want to delete:" 8 39 --noc>
+if [ $? -eq 0 ]; then
+groupdel $group
+whiptail --title "Delete" --msgbox  "$group deleted" 8 39
+else
+whiptail --title "Delete" --msgbox  "Cancelled" 8 39
+fi
+}
+
+
+function append_group {
+username=$(whiptail --title "Add User To Group" --inputbox "Enter the username you want" 8 39 --noc>
+group=$(whiptail --title "Add User To Group" --inputbox "Enter the group you want:" 8 39 --nocancel>
+if [ $? -eq 0 ]; then
+usermod -aG $group  $username
+whiptail --title "Append" --msgbox  "User $username added to $group successfully" 8 39
+else
+whiptail --title "Append" --msgbox  "Cancelled" 8 39
+fi
+}
+
+
+choice=$(whiptail --title "Project" --menu "Choose an option" 25 78 16 \
+"Add User" "Add a user to the system." \
+"Delete User" "Add a user from the system." \
+"Show User Details" "Show Aging Information For User." \
+"List Users" "List all users on the system." \
+"Enable User" "If user account is disabled you can activate it" \
+"Disable User" "If user account is enabled you can disable it" \
+"User Password" "Change user password" \
+"Add Group" "Add a user group to the system." \
+"Delete Group" "Delete a user group from the system." \
+"Add User To Group" "Add user to existing group , will be second group" \
+"List Groups" "List all groups on the system." 3>&1 1>&2 2>&3)
+
+if [ $? -eq 0 ]
+then
+case $choice in
+    "Add User") add_user ;;
+    "Delete User") delete_user ;;
+    "Show User Details") user_details ;;
+    "List Users") list_users ;;
+    "Enable User") enable_user ;;
+    "Disable User") disable_user ;;
+    "User Password") user_password ;;
+    "Add Group") add_group ;;
+    "Delete Group") delete_group ;;
+    "Add User To Group") append_group ;;
+    "List Groups") list_groups ;;
+esac
+else
+exit 1
+fi
+
+
+
+
